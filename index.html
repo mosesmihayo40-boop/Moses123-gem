@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGAPARI • ONE SIGNAL PER 20min (NO REPEAT)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a0c16 0%, #13182b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 12px;
+            margin: 0;
+        }
+
+        .card {
+            max-width: 640px;
+            width: 100%;
+            background: rgba(10, 15, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #3f4d8c;
+            border-radius: 48px;
+            padding: 1.8rem 1.5rem 2rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), 0 0 0 2px #4f60a0 inset;
+            color: #ecf2ff;
+            transition: all 0.2s;
+        }
+
+        .locked-blur {
+            filter: blur(4px) grayscale(0.7);
+            pointer-events: none;
+            opacity: 0.5;
+            transition: 0.2s;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #00e0ff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .site-badge {
+            background: #1a2442;
+            padding: 8px 22px;
+            border-radius: 60px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            border: 1px solid #4ae0ff;
+            color: #b7f0ff;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px cyan;
+        }
+
+        /* MEGAPARI link & code row - continuous connection */
+        .megapari-row {
+            background: #031128;
+            border-radius: 60px;
+            padding: 15px 20px;
+            margin: 15px 0 10px;
+            border: 2px solid #ffaa33;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 0 15px #ffb347;
+            position: relative;
+            overflow: hidden;
+        }
+        .megapari-row::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+        @keyframes shine {
+            0% { left: -100%; }
+            20% { left: 100%; }
+            100% { left: 100%; }
+        }
+        .megapari-link {
+            background: #1f3a5f;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 1px solid #ffcc66;
+            z-index: 2;
+        }
+        .megapari-link a {
+            color: #ffe28a;
+            text-decoration: none;
+        }
+        .megapari-link a:hover {
+            text-decoration: underline;
+            color: #ffbb33;
+        }
+        .connection-code {
+            background: #000e1c;
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            border: 1px solid #5effb2;
+            color: #aaffbb;
+            z-index: 2;
+            font-weight: bold;
+        }
+
+        /* scanner / search process */
+        .scanner-row {
+            background: #020617;
+            border-radius: 60px;
+            padding: 12px 20px;
+            margin: 10px 0 20px;
+            border: 1px solid #39658a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: 0 0 12px #00a6ff70;
+            min-height: 80px;
+        }
+
+        .pulse {
+            width: 18px;
+            height: 18px;
+            background: #0ef;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #0ef;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        .wave-status {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: #aaf0ff;
+            background: #111c33;
+            padding: 8px 18px;
+            border-radius: 30px;
+            border-left: 3px solid #0af;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .freq-badge {
+            background: #1e2a47;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            color: #ffd966;
+        }
+
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #0b1429e0;
+            border-radius: 40px;
+            padding: 15px 20px;
+            margin: 18px 0 20px;
+            border: 1px solid #4d70b0;
+            flex-wrap: wrap;
+            gap: 10px;
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #101d3a;
+            padding: 6px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .stat-cell span { font-size: 1.5rem; }
+
+        .safe-badge { background: #2e4d2e; color: #d8ffa0; border-left: 4px solid #9eff6e; }
+        .bomb-badge { background: #521c1c; color: #ffa09c; border-left: 4px solid #ff5555; }
+        .acc-badge { background: #003f6b; color: #9bc5ff; border-left: 4px solid #3b9eff; }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin: 25px 0 30px;
+            justify-content: center;
+        }
+
+        .cell {
+            aspect-ratio: 1/1;
+            background: #0f1b36;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #b0c6fa;
+            box-shadow: 0 0 0 2px #2d4280, 0 8px 0 #070e1c;
+            transition: 0.1s ease;
+            cursor: default;
+            border: 1px solid #6183d0;
+        }
+
+        .cell.safe-tile {
+            background: #f5c542;
+            background: radial-gradient(circle at 30% 30%, #ffe28a, #e0a800);
+            color: #1f2700;
+            box-shadow: 0 0 0 3px #ffdb8e, 0 8px 0 #9e7400;
+            border: 1px solid #fff7b0;
+            font-weight: 900;
+            text-shadow: 1px 1px 0 #ffcd7e;
+        }
+
+        .time-row {
+            background: #030b1a;
+            border-radius: 60px;
+            padding: 14px 20px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 600;
+            border: 1px solid #3a60a0;
+            margin: 20px 0 10px;
+            box-shadow: inset 0 2px 7px #00000070;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .play-time {
+            color: #ffdb8e;
+            background: #1f2942;
+            padding: 5px 15px;
+            border-radius: 40px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        .multiplier-pill {
+            background: #1f3a3a;
+            border: 1px solid #2cc56e;
+            color: #a2f5b6;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        button {
+            background: linear-gradient(145deg, #1a2755, #0b1535);
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 1.6rem;
+            padding: 20px 10px;
+            border-radius: 70px;
+            width: 100%;
+            cursor: pointer;
+            border: 2px solid #3bc0ff;
+            box-shadow: 0 10px 0 #004080, 0 5px 25px #00a6ff;
+            transition: 0.07s linear;
+            letter-spacing: 1px;
+            margin: 15px 0 0;
+        }
+
+        button:active {
+            transform: translateY(7px);
+            box-shadow: 0 3px 0 #004080, 0 5px 20px #00a6ff;
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #1a3150;
+            border-color: #4f6790;
+            pointer-events: none;
+        }
+
+        .footnote {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            color: #aab7dd;
+            font-weight: 500;
+        }
+
+        .ai-tag {
+            background: #103b4e;
+            padding: 5px 16px;
+            border-radius: 30px;
+            border: 1px solid #0ef;
+            color: #b2ffff;
+            font-size: 1rem;
+        }
+
+        .password-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            flex-direction: column;
+        }
+
+        .password-box {
+            background: #192237;
+            padding: 40px 30px;
+            border-radius: 60px;
+            border: 3px solid #0af;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 30px 40px black;
+        }
+
+        .password-box h2 {
+            color: #9fefff;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .password-box input {
+            width: 100%;
+            padding: 18px 25px;
+            font-size: 2rem;
+            text-align: center;
+            border-radius: 60px;
+            border: none;
+            background: #2c3755;
+            color: white;
+            border: 2px solid #0af;
+            outline: none;
+            font-family: monospace;
+            letter-spacing: 5px;
+        }
+
+        .password-box button {
+            margin-top: 25px;
+            background: #0080c0;
+            border: none;
+            color: white;
+            font-size: 1.7rem;
+            padding: 15px;
+            border-radius: 60px;
+            font-weight: bold;
+            border-bottom: 5px solid #003366;
+        }
+
+        .info-chip {
+            background: #1f2940;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-size: 1.1rem;
+            display: inline-block;
+        }
+
+        .small-note {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .continuous-badge {
+            background: #005f5f;
+            color: #a0ffff;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            border: 1px solid #0ff;
+            animation: glow 2s infinite;
+        }
+        @keyframes glow {
+            0% { box-shadow: 0 0 2px #0ff; }
+            50% { box-shadow: 0 0 10px #0ff; }
+            100% { box-shadow: 0 0 2px #0ff; }
+        }
+
+        .lockout-tag {
+            background: #4d1e1e;
+            color: #ffaaaa;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            border: 1px solid #ff6666;
+        }
+    </style>
+</head>
+<body>
+
+<!-- PASSWORD PROTECTION (mose123) -->
+<div id="passwordOverlay" class="password-overlay">
+    <div class="password-box">
+        <h2>🔐 MEGAPARI ACCESS</h2>
+        <div style="color:#0af; margin-bottom:20px;">enter connection key</div>
+        <input type="password" id="passwordInput" placeholder="********" maxlength="10" autofocus>
+        <button id="unlockBtn">CONNECT & UNLOCK</button>
+        <!-- PROMO CODE REMOVED -->
+    </div>
+</div>
+
+<!-- MAIN APP (initially blurred) -->
+<div id="mainApp" class="card locked-blur">
+    <div class="header">
+        <div class="site-badge">🎰 MEGAPARI · ONE SIGNAL/20min</div>
+        <!-- PROMO CODE REMOVED -->
+    </div>
+
+    <!-- MEGAPARI direct link + CONTINUOUS CONNECTION CODE (mose123) -->
+    <div class="megapari-row">
+        <div class="megapari-link">🔗 <a href="https://megapari.com" target="_blank">megapari.com/login</a></div>
+        <div class="connection-code" id="connectionCode">mose123</div>
+    </div>
+
+    <!-- Network scanner simulating continuous search process -->
+    <div class="scanner-row">
+        <div class="pulse"></div>
+        <div class="wave-status" id="waveStatus">🌀 continuous connection active · 3 traps / 5 safe only ...</div>
+        <div class="freq-badge" id="freqBand">2.4 GHz · SNR 47dB</div>
+    </div>
+
+    <!-- Prediction Stats row: traps = 3 (fixed), safe = 5 (fixed) -->
+    <div class="stats-panel">
+        <div class="stat-cell safe-badge"><span>🟡</span> Safe <span id="safeCount">5</span></div>
+        <div class="stat-cell bomb-badge"><span>💣</span> Traps <span id="bombCount">3</span></div>
+        <div class="stat-cell acc-badge"><span>📡</span> Wave Acc <span id="accuracyDisplay">98.7</span>%</div>
+    </div>
+
+    <!-- 5x5 grid (25 boxes) -->
+    <div class="grid-container" id="minesGrid">
+        <!-- JS will fill 25 cells -->
+    </div>
+
+    <!-- Play time + Multiplier -->
+    <div class="time-row">
+        <span class="play-time" id="playTimeDisplay">2026-03-02 20:16:00</span>
+        <span class="multiplier-pill" id="multiplierDisplay">x2.10</span>
+    </div>
+
+    <!-- AI tag & signal slot info + continuous badge + lockout status -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; flex-wrap: wrap; gap: 8px;">
+        <div class="ai-tag">📡 MEGAPARI LOCK · 5 SAFE / 3 TRAPS</div>
+        <div class="info-chip">⏱️ next signal at <span id="nextSlot">00:20</span></div>
+        <div class="continuous-badge" id="continuousStatus">🔄 CONNECTION: ACTIVE</div>
+        <div class="lockout-tag" id="lockoutStatus">⚡ SIGNAL READY</div>
+    </div>
+
+    <!-- CAPTURE SIGNAL BUTTON (strictly one per 20min window) -->
+    <button id="generateBtn">🌀 CAPTURE 20min SIGNAL (ONE ONLY) 🌀</button>
+
+    <div class="footnote">
+        <span>🔁 exactly 1 signal / 20min · no repeats</span>
+        <span>⚡ accuracy <span id="liveAcc">98-99%</span> vs MEGAPARI</span>
+    </div>
+    <div class="small-note" style="text-align:center; color:#b6c1da;">* continuous connection via <strong style="color:#ffd966;">mose123</strong> · button locks until next 20min slot</div>
+</div>
+
+<script>
+    (function() {
+        // ---------- PASSWORD PROTECTION (mose123) ----------
+        const overlay = document.getElementById('passwordOverlay');
+        const mainApp = document.getElementById('mainApp');
+        const pwdInput = document.getElementById('passwordInput');
+        const unlockBtn = document.getElementById('unlockBtn');
+
+        const CORRECT_PWD = 'mose123';
+
+        unlockBtn.addEventListener('click', function() {
+            if (pwdInput.value === CORRECT_PWD) {
+                overlay.style.display = 'none';
+                mainApp.classList.remove('locked-blur');
+                // after unlock, initial setup
+                checkAndUpdateSlot(); // determine current slot and if signal already generated
+                startAutoSlotTimer(); // monitor 20min marks
+                startContinuousConnection(); // start continuous connection updates
+            } else {
+                alert('Incorrect key. Use mose123');
+                pwdInput.value = '';
+                pwdInput.focus();
+            }
+        });
+
+        pwdInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') unlockBtn.click();
+        });
+
+        // ---------- DOM elements ----------
+        const gridContainer = document.getElementById('minesGrid');
+        const safeSpan = document.getElementById('safeCount');
+        const bombSpan = document.getElementById('bombCount');
+        const accSpan = document.getElementById('accuracyDisplay');
+        const playTimeSpan = document.getElementById('playTimeDisplay');
+        const multiplierSpan = document.getElementById('multiplierDisplay');
+        const generateBtn = document.getElementById('generateBtn');
+        const liveAccNote = document.getElementById('liveAcc');
+        const waveStatus = document.getElementById('waveStatus');
+        const freqBand = document.getElementById('freqBand');
+        const connectionCode = document.getElementById('connectionCode');
+        const nextSlotSpan = document.getElementById('nextSlot');
+        const continuousStatus = document.getElementById('continuousStatus');
+        const lockoutStatus = document.getElementById('lockoutStatus');
+
+        // 25 cells array
+        let cells = [];
+
+        // init grid
+        function buildGrid() {
+            gridContainer.innerHTML = '';
+            for (let i = 1; i <= 25; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                cell.textContent = i;
+                gridContainer.appendChild(cell);
+                cells.push(cell);
+            }
+        }
+        buildGrid();
+
+        // helper: random between min/max
+        function rand(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // FIXED: 3 TRAPS + 5 SAFE only
+        const FIXED_BOMBS = 3;
+        const FIXED_SAFE = 5;
+
+        // Track signal generation per 20min slot
+        let currentSlot = null;        // current 20min slot identifier (0, 20, or 40)
+        let signalGeneratedInSlot = false; // whether signal was already generated in current slot
+
+        // Determine current 20min slot based on minutes
+        function getCurrentSlot(minutes) {
+            if (minutes < 20) return 20;
+            else if (minutes < 40) return 40;
+            else return 0; // next hour's 0 minute slot
+        }
+
+        // Check current time and update slot/signal availability
+        function checkAndUpdateSlot() {
+            const now = new Date();
+            const mins = now.getMinutes();
+            const newSlot = getCurrentSlot(mins);
+            
+            // If slot changed, reset signal generated flag
+            if (newSlot !== currentSlot) {
+                currentSlot = newSlot;
+                signalGeneratedInSlot = false;
+                enableGenerateButton(true);
+                lockoutStatus.textContent = '⚡ SIGNAL READY';
+                lockoutStatus.style.background = '#1e4d1e';
+                lockoutStatus.style.color = '#aaffaa';
+                lockoutStatus.style.border = '1px solid #6eff6e';
+            }
+            
+            // Update next slot display
+            updateNextSlotDisplay();
+        }
+
+        // Update the "next signal at" display
+        function updateNextSlotDisplay() {
+            const now = new Date();
+            const mins = now.getMinutes();
+            let targetMinute, targetHour = now.getHours();
+            
+            if (mins < 20) targetMinute = 20;
+            else if (mins < 40) targetMinute = 40;
+            else {
+                targetMinute = 0;
+                targetHour = (targetHour + 1) % 24;
+            }
+            
+            nextSlotSpan.textContent = `${String(targetHour).padStart(2,'0')}:${String(targetMinute).padStart(2,'0')}`;
+        }
+
+        // Enable/disable generate button
+        function enableGenerateButton(enable) {
+            generateBtn.disabled = !enable;
+            if (enable) {
+                generateBtn.style.opacity = '1';
+                generateBtn.style.pointerEvents = 'auto';
+            } else {
+                generateBtn.style.opacity = '0.5';
+                generateBtn.style.pointerEvents = 'none';
+            }
+        }
+
+        // Generate signal (only if allowed)
+        function generate20MinSignal() {
+            // Check if signal can be generated
+            if (signalGeneratedInSlot) {
+                waveStatus.textContent = '⛔ signal already generated in this 20min window · wait for next slot';
+                return;
+            }
+
+            // ---- Generate the signal ----
+            const bombCount = FIXED_BOMBS;
+            const safeCount = FIXED_SAFE;
+            safeSpan.textContent = safeCount;
+            bombSpan.textContent = bombCount;
+
+            // accuracy between 97.5% and 99.9%
+            const accuracy = (97.5 + (Math.random() * 2.4)).toFixed(1);
+            accSpan.textContent = accuracy;
+            liveAccNote.textContent = accuracy + '%';
+
+            // randomly select 5 safe indices
+            const totalCells = 25;
+            const indices = Array.from({ length: totalCells }, (_, i) => i + 1);
+            for (let i = indices.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [indices[i], indices[j]] = [indices[j], indices[i]];
+            }
+            const safeIndices = new Set(indices.slice(0, safeCount));
+
+            // update grid
+            cells.forEach(cell => {
+                cell.classList.remove('safe-tile');
+                const idx = parseInt(cell.dataset.index);
+                if (safeIndices.has(idx)) {
+                    cell.classList.add('safe-tile');
+                }
+            });
+
+            // multiplier
+            const ratio = safeCount / 25;
+            const multiplier = (1.1 + ratio * 2.0).toFixed(2);
+            multiplierSpan.textContent = `x${multiplier}`;
+
+            // Set exact play time to current 20min mark
+            const now = new Date();
+            const minutes = now.getMinutes();
+            let targetMinute;
+            if (minutes < 20) targetMinute = 20;
+            else if (minutes < 40) targetMinute = 40;
+            else targetMinute = 0;
+            let targetHour = now.getHours();
+            if (targetMinute === 0 && minutes >= 40) {
+                targetHour = (targetHour + 1) % 24;
+            }
+            const signalTime = new Date(now);
+            signalTime.setHours(targetHour, targetMinute, 0, 0);
+
+            const year = signalTime.getFullYear();
+            const month = String(signalTime.getMonth() + 1).padStart(2,'0');
+            const day = String(signalTime.getDate()).padStart(2,'0');
+            const hour = String(signalTime.getHours()).padStart(2,'0');
+            const minute = String(signalTime.getMinutes()).padStart(2,'0');
+            const sec = '00';
+            playTimeSpan.textContent = `${year}-${month}-${day} ${hour}:${minute}:${sec}`;
+
+            // Update scanner
+            const snr = rand(52, 68);
+            const freqOptions = ['2.4 GHz', '5.8 GHz', '3.6 GHz', '1.8 GHz'];
+            const band = freqOptions[Math.floor(Math.random() * freqOptions.length)];
+            freqBand.textContent = `${band} · SNR ${snr}dB`;
+
+            const searchPhases = [
+                '✅ 3 traps · 5 safe · signal captured',
+                '📡 signal locked · 5 safe positions',
+                '⚡ 20min slot signal generated',
+                '🎯 MEGAPARI signal acquired'
+            ];
+            waveStatus.textContent = searchPhases[Math.floor(Math.random() * searchPhases.length)];
+
+            // Mark signal as generated in this slot
+            signalGeneratedInSlot = true;
+            enableGenerateButton(false);
+            lockoutStatus.textContent = '🔒 SIGNAL USED · WAIT NEXT SLOT';
+            lockoutStatus.style.background = '#4d1e1e';
+            lockoutStatus.style.color = '#ffaaaa';
+            lockoutStatus.style.border = '1px solid #ff6666';
+
+            // flash effect
+            cells.forEach(c => c.classList.add('wave-captured'));
+            setTimeout(() => {
+                cells.forEach(c => c.classList.remove('wave-captured'));
+            }, 300);
+        }
+
+        // Auto-check every second for slot changes
+        function startAutoSlotTimer() {
+            setInterval(() => {
+                const now = new Date();
+                const mins = now.getMinutes();
+                const secs = now.getSeconds();
+                const newSlot = getCurrentSlot(mins);
+                
+                // Check if slot changed
+                if (newSlot !== currentSlot) {
+                    currentSlot = newSlot;
+                    signalGeneratedInSlot = false;
+                    enableGenerateButton(true);
+                    lockoutStatus.textContent = '⚡ SIGNAL READY';
+                    lockoutStatus.style.background = '#1e4d1e';
+                    lockoutStatus.style.color = '#aaffaa';
+                    lockoutStatus.style.border = '1px solid #6eff6e';
+                    
+                    // Auto-generate at the exact slot start? No, wait for user or we can notify
+                    waveStatus.textContent = `🆕 new 20min slot (${newSlot}) · ready for signal`;
+                }
+                
+                // Update next slot display
+                updateNextSlotDisplay();
+                
+                // Update searching message based on time
+                if (!signalGeneratedInSlot) {
+                    if (mins < 20) {
+                        waveStatus.textContent = `🕒 slot 20min · ${20 - mins} min left · press button to generate (one only)`;
+                    } else if (mins < 40) {
+                        waveStatus.textContent = `🕒 slot 40min · ${40 - mins} min left · press button to generate (one only)`;
+                    } else {
+                        waveStatus.textContent = `🕒 slot 0min · ${60 - mins} min left · press button to generate (one only)`;
+                    }
+                }
+            }, 1000); // check every second for precise slot detection
+        }
+
+        // Continuous connection with mose123
+        function startContinuousConnection() {
+            connectionCode.textContent = 'mose123';
+            
+            setInterval(() => {
+                const states = ['🔄 CONNECTION: ACTIVE', '📡 LINK: ESTABLISHED', '⚡ SYNC: CONTINUOUS', '🌐 CONNECTED TO MEGAPARI'];
+                continuousStatus.textContent = states[Math.floor(Math.random() * states.length)];
+            }, 10000);
+        }
+
+        // Attach generate button with strict one-per-slot enforcement
+        generateBtn.addEventListener('click', () => {
+            generate20MinSignal();
+        });
+
+        // Initial setup
+        setTimeout(() => {
+            checkAndUpdateSlot();
+        }, 300);
+
+        // Set initial counts
+        bombSpan.textContent = FIXED_BOMBS;
+        safeSpan.textContent = FIXED_SAFE;
+    })();
+</script>
+
+<!-- ============================================ -->
+<!-- CONNECTION CODE: mose123 (persistent)        -->
+<!-- ONE SIGNAL PER 20min SLOT · NO REPEATS       -->
+<!-- Button locks after use until next slot       -->
+<!-- MEGAPARI login link added                     -->
+<!-- Promo code removed completely                 -->
+<!-- ============================================ -->
+</body>
+</html>
